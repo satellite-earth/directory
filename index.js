@@ -1,5 +1,5 @@
 
-const Parcel = require('@satellite-earth/dev-parcel');
+const Parcel = require('@satellite-earth/parcel');
 const utils = require('web3-utils');
 
 // Determine if record matches query
