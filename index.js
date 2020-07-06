@@ -80,7 +80,7 @@ class Directory {
 		}
 
 		// Get directory logs with the provided function
-		const logs = await earth.getDirectoryLog(range);
+		logs = await earth.getDirectoryLog(range);
 
 		// Sort by block and transaction index to ensure array
 		// order matches blockchain's sequence of execution
