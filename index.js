@@ -65,8 +65,8 @@ class Directory {
 		// If toBlock not specified, start sync from latest detected block
 		// number with 12 blocks buffer to allow for adequate confirmation
 		if (typeof toBlock === 'undefined') {
-			 const latest = await earth.web3.eth.getBlockNumber();
-			 toBlock = latest - 12;
+			const latest = await earth.web3.eth.getBlockNumber();
+			toBlock = latest - 12;
 		}
 
 		// Get all contract events in the given block range
