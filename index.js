@@ -2,15 +2,15 @@
 const Parcel = require('@satellite-earth/parcel');
 const utils = require('web3-utils');
 
-// Determine if record matches query
-const match = (record, block, { primary, recovery }) => {
-	const recorded = (value) => { return typeof value !== 'undefined' };
-	return typeof block !== 'undefined'
-	&& block >= record.block
-	&& (
-		primary && recorded(record.primary))
-		|| (recovery && recorded(record.recovery)
-	);
+// Select address from records at block number
+const select = (records, which, at) => {
+	for (let record of records) {
+		const value = record[which];
+		const match = at >= record.block;
+		if (match && typeof value !== 'undefined') {
+			return value;
+		}
+	}
 };
 
 // Remove meaningless zeros from bytes32 hex string
@@ -182,13 +182,10 @@ class Directory {
 		// If address has never been linked, return undefined
 		if (!alias) { return; }
 
-		// Return if block within interval
-		for (let record of this.map.alias[alias]) {
-			if (match(record, options.at || this.blockNumber, { primary: true })) {
-
-				// If option.utf8 convert to utf8
-				return options.utf8 ? utils.hexToUtf8('0x' + alias) : alias;
-			}
+		// If address matches address linked to alias at block number, return alias
+		const addr = select(this.getRecords(alias, options), 'primary', options.at);
+		if (addr && addr === lower) {
+			return options.utf8 ? utils.hexToUtf8('0x' + alias) : alias;
 		}
 
 		return;
@@ -196,40 +193,12 @@ class Directory {
 
 	// Get primary address for alias at given block number
 	getPrimary (alias, options = {}) {
-
-		// Get address records for alias, if any
-		const records = this.getRecords(alias, options);
-
-		// If no records exist, return undefined
-		if (!records) { return; }
-
-		// Return if block number within interval
-		for (let record of records) {
-			if (match(record, options.at || this.blockNumber, { primary: true })) {
-				return record.primary;
-			}
-		}
-
-		return;
+		return select(this.getRecords(alias, options), 'primary', options.at);
 	}
 
 	// Get recovery address (if any) for alias at given block number
 	getRecovery (alias, options = {}) {
-
-		// Get address records for alias, if any
-		const records = this.getRecords(alias, options);
-
-		// If no records exist, return undefined
-		if (!records) { return; }
-
-		// Return if block number within interval
-		for (let record of records) {
-			if (match(record, options.at || this.blockNumber, { recovery: true })) {
-				return record.recovery;
-			}
-		}
-
-		return;
+		return select(this.getRecords(alias, options), 'recovery', options.at);
 	}
 
 	// Return all records for a given alias
