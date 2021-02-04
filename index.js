@@ -1,6 +1,5 @@
-
 const Parcel = require('@satellite-earth/parcel');
-const utils = require('web3-utils');
+const utils = require('@satellite-earth/utils');
 
 // Select address from records at block number
 const select = (records, which, at) => {
@@ -54,18 +53,19 @@ class Directory {
 
 	// Use the supplied core API instance
 	// to build the directory from logs
-	async synchronize (earth, _toBlock) {
-
-		if (!earth) {
-			throw Error('Must provide async function to getDirectoryLog and getBlockNumber');
-		}
+	async synchronize (eth, _toBlock) {
 
 		let toBlock = _toBlock;
 
 		// If toBlock not specified, start sync from latest detected block
 		// number with 12 blocks buffer to allow for adequate confirmation
 		if (typeof toBlock === 'undefined') {
-			const latest = await earth.web3.eth.getBlockNumber();
+
+			if (!eth || !eth.getBlockNumber) {
+				throw Error('Missing eth interface function \'getBlockNumber\'');
+			}
+
+			const latest = await eth.getBlockNumber();
 			toBlock = latest - 12;
 		}
 
@@ -79,8 +79,12 @@ class Directory {
 			return [];
 		}
 
+		if (!eth || !eth.getDirectoryLog) {
+			throw Error('Missing eth interface function \'getDirectoryLog\'');
+		}
+
 		// Get directory logs with the provided function
-		logs = await earth.getDirectoryLog(range);
+		logs = await eth.getDirectoryLog(range);
 
 		// Sort by block and transaction index to ensure array
 		// order matches blockchain's sequence of execution
@@ -175,6 +179,14 @@ class Directory {
 	// Get alias name that address was linked to at given block number
 	getAlias (primary, options = {}) {
 
+		if (!this.initialized) {
+			throw Error('Directory not initialized');
+		}
+
+		if (options.at && options.at > this.blockNumber) {
+			throw Error('Directory not sufficiently advanced');
+		}
+
 		// Alias that the address was linked to at some point
 		const lower = primary.toLowerCase();
 		const alias = this.map.address[lower];
@@ -228,3 +240,4 @@ class Directory {
 }
 
 module.exports = Directory;
+

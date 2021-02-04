@@ -1,6 +1,6 @@
 {
   "name": "@satellite-earth/directory",
-  "version": "1.0.3",
+  "version": "2.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "@satellite-earth/parcel": "^1.0.0",
-    "web3-utils": "1.0.0-beta.52"
+    "@satellite-earth/utils": "^2.0.0"
   },
   "author": {
     "name": "Stuart Bowman",
